@@ -15,6 +15,7 @@ type Indexation interface {
 	Programs() gin.HandlerFunc
 	Episodes() gin.HandlerFunc
 	Medias() gin.HandlerFunc
+	All() gin.HandlerFunc
 }
 
 // indexationHandler is an implementation of the Indexation interface.

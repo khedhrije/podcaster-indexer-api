@@ -39,6 +39,7 @@ func CreateRouter(handler handlers.Indexation) *gin.Engine {
 			walls.POST("/programs", handler.Programs())
 			walls.POST("/episodes", handler.Episodes())
 			walls.POST("/medias", handler.Medias())
+			walls.POST("/all", handler.All())
 		}
 
 	}

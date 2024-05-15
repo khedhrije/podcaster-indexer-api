@@ -14,6 +14,7 @@ type Indexer interface {
 	Programs(ctx context.Context) error
 	Episodes(ctx context.Context) error
 	Medias(ctx context.Context) error
+	All(ctx context.Context) error
 }
 
 // indexerApi struct implements the Indexer interface
