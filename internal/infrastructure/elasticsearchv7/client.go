@@ -8,8 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/khedhrije/podcaster-indexer-api/internal/domain/port"
-	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"time"
@@ -290,14 +288,4 @@ type BulkResponse struct {
 			} `json:"error"`
 		} `json:"index"`
 	} `json:"items"`
-}
-
-// Function to read an io.ReadCloser and return the content as a string
-func readToString(rc io.ReadCloser) (string, error) {
-	defer rc.Close()
-	bytes, err := ioutil.ReadAll(rc)
-	if err != nil {
-		return "", err
-	}
-	return string(bytes), nil
 }
