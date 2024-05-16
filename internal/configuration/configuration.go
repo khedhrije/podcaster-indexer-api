@@ -58,13 +58,13 @@ type SearchEngineConfig struct {
 // It uses viper to handle the environment variables and sets default values if specific configurations are not provided.
 func loadFromEnv() *AppConfig {
 	viper.AutomaticEnv() // Automatically read environment variables
-
+	viper.SetDefault("APP_PODCASTER_INDEXER_API_HOST_PORT", 8080)
 	return &AppConfig{
-		Name:        viper.GetString("APP_NAME"),              // Application name
-		Env:         viper.GetString("APP_ENV"),               // Application environment
-		HostAddress: viper.GetString("APP_HOST_ADDRESS"),      // Server host address
-		HostPort:    viper.GetInt("APP_HOST_PORT"),            // Server port number
-		DocsAddress: viper.GetString("APP_DOCS_HOST_ADDRESS"), // Address for API documentation
+		Name:        viper.GetString("APP_PODCASTER_INDEXER_API_NAME"),              // Application name
+		Env:         viper.GetString("APP_PODCASTER_INDEXER_API_ENV"),               // Application environment
+		HostAddress: viper.GetString("APP_PODCASTER_INDEXER_API_HOST_ADDRESS"),      // Server host address
+		HostPort:    viper.GetInt("APP_PODCASTER_INDEXER_API_HOST_PORT"),            // Server port number
+		DocsAddress: viper.GetString("APP_PODCASTER_INDEXER_API_DOCS_HOST_ADDRESS"), // Address for API documentation
 		DatabaseConfig: DatabaseConfig{
 			Driver:                 viper.GetString("MYSQL_DRIVER"),                    // Database driver
 			Name:                   viper.GetString("MYSQL_NAME"),                      // Database name
@@ -74,7 +74,7 @@ func loadFromEnv() *AppConfig {
 			MaxLifetimeConnections: viper.GetDuration("MYSQL_MAX_CONNECTION_LIFETIME"), // Connection lifetime
 		},
 		CacheConfig: CacheConfig{
-			DSN: viper.GetString("REDIS_DSN"), // Data source name for Redis
+			DSN: viper.GetString("REDIS_URL"), // Data source name for Redis
 		},
 		Elasticsearch: SearchEngineConfig{
 			URL:      viper.GetString("ES_URL"),

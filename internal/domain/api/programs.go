@@ -14,23 +14,23 @@ func (api indexerApi) Programs(ctx context.Context) error {
 
 	// Create a new index
 	if err := api.indexer.CreateIndex(ctx, indexName, Programs); err != nil {
-		return err
+		return fmt.Errorf("could not create index: %w", err)
 	}
 
 	// Assign the in-progress alias to the new index
 	if err := api.indexer.CreateAlias(ctx, indexName, "in-progress"); err != nil {
-		return err
+		return fmt.Errorf("could not create alias: %w", err)
 	}
 
 	// Retrieve all programs
 	programs, err := api.programAdapter.FindAll(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not find all programs: %w", err)
 	}
 
 	// Bulk index programs
 	if err := api.indexer.RecordBulkItems(ctx, indexName, mapArrayToInterface(programs), 5, 5); err != nil {
-		return err
+		return fmt.Errorf("could not record bulk all programs: %w", err)
 	}
 
 	// Get all indexes associated with the latest alias
@@ -47,11 +47,11 @@ func (api indexerApi) Programs(ctx context.Context) error {
 	// If there is no latest programs index
 	if programsLatestIndexName == "" {
 		// Make the in-progress index the latest index
-		if err := api.indexer.DeleteAlias(ctx, indexName, "in-progress"); err != nil {
-			return err
+		if err = api.indexer.DeleteAlias(ctx, indexName, "in-progress"); err != nil {
+			return fmt.Errorf("could not delete alias: %w", err)
 		}
-		if err := api.indexer.CreateAlias(ctx, indexName, "latest"); err != nil {
-			return err
+		if err = api.indexer.CreateAlias(ctx, indexName, "latest"); err != nil {
+			return fmt.Errorf("could not delete alias: %w", err)
 		}
 	} else {
 		// Handle existing latest index
@@ -68,33 +68,33 @@ func (api indexerApi) Programs(ctx context.Context) error {
 		if programsPreviousIndexName == "" {
 			// Make the latest index the previous index
 			if err := api.indexer.DeleteAlias(ctx, programsLatestIndexName, "latest"); err != nil {
-				return err
+				return fmt.Errorf("could not delete alias: %w", err)
 			}
 			if err := api.indexer.CreateAlias(ctx, programsLatestIndexName, "previous"); err != nil {
-				return err
+				return fmt.Errorf("could not create alias: %w", err)
 			}
 		} else {
 			// Delete the previous index
 			if err := api.indexer.DeleteIndexes(ctx, []string{programsPreviousIndexName}); err != nil {
-				return err
+				return fmt.Errorf("could not delete alias: %w", err)
 			}
 			// Update aliases accordingly
 			if err := api.indexer.DeleteAlias(ctx, programsLatestIndexName, "latest"); err != nil {
-				return err
+				return fmt.Errorf("could not delete alias: %w", err)
 			}
 			if err := api.indexer.CreateAlias(ctx, programsLatestIndexName, "previous"); err != nil {
-				return err
+				return fmt.Errorf("could not create alias: %w", err)
 			}
 		}
 
 		// Always remove the in-progress alias from the new index
 		if err := api.indexer.DeleteAlias(ctx, indexName, "in-progress"); err != nil {
-			return err
+			return fmt.Errorf("could not delete alias: %w", err)
 		}
 
 		// Create latest alias for the new index
 		if err := api.indexer.CreateAlias(ctx, indexName, "latest"); err != nil {
-			return err
+			return fmt.Errorf("could not create alias: %w", err)
 		}
 	}
 

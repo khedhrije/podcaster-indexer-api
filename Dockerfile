@@ -1,25 +1,37 @@
-# Use the official Golang image as builder
-FROM golang:1.22 as builder
+# Start from the latest golang base image
+FROM golang:latest as builder
 
-# Set the working directory inside the container
-WORKDIR /go/src
+# Add Maintainer Info
+LABEL maintainer="Khedhrije <khedhrije@gmail.com>"
 
-# Copy the current directory contents into the container
+# Set the Current Working Directory inside the container
+WORKDIR /app
+
+# Copy go mod and sum files
+COPY go.mod go.sum ./
+
+# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
+RUN go mod download
+
+# Copy the source from the current directory to the Working Directory inside the container
 COPY . .
 
-# Install git and build the Go application
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends git \
-    && cd /go/src \
-    && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 /usr/local/go/bin/go build -ldflags="-s -w" -o /app .
+# Build the Go app
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 
-#-----------------------------------------------------------------------------------
 
-# Use Distroless as the final base image for a minimal container
-FROM gcr.io/distroless/base
+######## Start a new stage from scratch #######
+FROM alpine:latest
 
-# Copy the built executable from the builder stage into the final image
-COPY --from=builder /app .
+RUN apk --no-cache add ca-certificates
 
-# Specify the command to run when the container starts
-CMD ["/app"]
+WORKDIR /root/
+
+# Copy the Pre-built binary file from the previous stage
+COPY --from=builder /app/main .
+
+# Expose port 8080 to the outside world
+EXPOSE 8082
+
+# Command to run the executable
+CMD ["./main"]

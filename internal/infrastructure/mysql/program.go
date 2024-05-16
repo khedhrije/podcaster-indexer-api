@@ -27,7 +27,7 @@ func NewProgramAdapter(client *client) port.Program {
 // It takes a context and returns a slice of model.Program and an error if the operation fails.
 func (adapter *programAdapter) FindAll(ctx context.Context) ([]*model.Program, error) {
 	const query = `
-        SELECT * FROM program
+        SELECT * FROM program;
     `
 	var programsDB []*ProgramDB
 	if err := adapter.client.db.SelectContext(ctx, &programsDB, query); err != nil {
