@@ -29,6 +29,7 @@ type AppConfig struct {
 	DatabaseConfig DatabaseConfig // Configuration settings for the database
 	CacheConfig    CacheConfig    // Configuration settings for caching
 	Elasticsearch  SearchEngineConfig
+	AccountApi     AccountApi
 }
 
 // DatabaseConfig defines the configuration settings for the database connection.
@@ -54,6 +55,10 @@ type SearchEngineConfig struct {
 	Password string
 }
 
+type AccountApi struct {
+	BaseURL string
+}
+
 // loadFromEnv loads configuration settings from environment variables and returns an AppConfig instance.
 // It uses viper to handle the environment variables and sets default values if specific configurations are not provided.
 func loadFromEnv() *AppConfig {
@@ -72,6 +77,9 @@ func loadFromEnv() *AppConfig {
 			MaxConnections:         viper.GetInt("MYSQL_MAX_CONNECTIONS"),              // Max open connections
 			MaxIdleConnections:     viper.GetInt("MYSQL_MAX_IDLE_CONNECTIONS"),         // Max idle connections
 			MaxLifetimeConnections: viper.GetDuration("MYSQL_MAX_CONNECTION_LIFETIME"), // Connection lifetime
+		},
+		AccountApi: AccountApi{
+			BaseURL: viper.GetString("ACCOUNT-API-URL"),
 		},
 		CacheConfig: CacheConfig{
 			DSN: viper.GetString("REDIS_URL"), // Data source name for Redis

@@ -1,6 +1,8 @@
 package router
 
 import (
+	"fmt"
+	"github.com/khedhrije/podcaster-indexer-api/internal/configuration"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -9,8 +11,8 @@ import (
 )
 
 const (
-	validationEndpoint = "http://0.0.0.0:8081/private/token/validate"
-	refreshEndpoint    = "http://0.0.0.0:8081/private/token/refresh"
+	validationEndpoint = "/private/token/validate"
+	refreshEndpoint    = "/private/token/refresh"
 )
 
 // TokenValidatorMiddleware creates a Gin middleware that validates a token by calling an external endpoint.
@@ -34,8 +36,9 @@ func TokenValidatorMiddleware() gin.HandlerFunc {
 
 		token := tokenParts[1]
 
+		url := fmt.Sprintf("%s%s", configuration.Config.AccountApi.BaseURL, validationEndpoint)
 		// Create a new HTTP request
-		req, err := http.NewRequest("POST", validationEndpoint, nil)
+		req, err := http.NewRequest("POST", url, nil)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create request"})
 			c.Abort()
@@ -95,7 +98,8 @@ func TokenRefresherMiddleware() gin.HandlerFunc {
 		token := tokenParts[1]
 
 		// Create a new HTTP request
-		req, err := http.NewRequest("POST", refreshEndpoint, nil)
+		url := fmt.Sprintf("%s%s", configuration.Config.AccountApi.BaseURL, refreshEndpoint)
+		req, err := http.NewRequest("POST", url, nil)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create request"})
 			c.Abort()

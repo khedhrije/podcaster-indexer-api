@@ -34,6 +34,7 @@ type adapter struct {
 func NewElasticSearchClient(config *configuration.AppConfig) (port.Indexer, error) {
 	esClient, err := createClient(config)
 	if err != nil {
+		log.Error().Err(err).Msg("elasticsearch adapter init failed")
 		return nil, fmt.Errorf("elasticsearch adapter init failed: %w", err)
 	}
 	return &adapter{client: esClient}, nil
@@ -44,6 +45,7 @@ func (c *adapter) CreateIndex(ctx context.Context, indexName string, docsType st
 
 	metadata, err := metadataByDocsType(docsType)
 	if err != nil {
+		log.Error().Err(err).Msg("getting metadata failed")
 		return errors.New("unknown docs type")
 	}
 
@@ -51,9 +53,18 @@ func (c *adapter) CreateIndex(ctx context.Context, indexName string, docsType st
 	body := bytes.NewBufferString(parsedMetadata)
 	response, err := c.client.Indices.Create(indexName, c.client.Indices.Create.WithBody(body), c.client.Indices.Create.WithContext(ctx))
 	if err != nil {
+		log.Error().Err(err).Interface("hello", "hello").Msg("creating index failed")
 		return err
 	}
+
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(response.Body)
+	respBytes := buf.String()
+
+	respString := string(respBytes)
+
 	if response.StatusCode != http.StatusOK {
+		log.Error().Interface("body", respString).Interface("response-code", response.StatusCode).Msg("creating index failed : response code")
 		return errors.New("error while creating index")
 	}
 	return nil
@@ -63,9 +74,11 @@ func (c *adapter) CreateIndex(ctx context.Context, indexName string, docsType st
 func (c *adapter) DeleteIndexes(ctx context.Context, indexNames []string) error {
 	response, err := c.client.Indices.Delete(indexNames, c.client.Indices.Delete.WithContext(ctx))
 	if err != nil {
+		log.Error().Err(err).Msg("creating index failed")
 		return err
 	}
 	if response.StatusCode != http.StatusOK {
+		log.Error().Interface("response-code", response.StatusCode).Msg("creating index failed : response code")
 		return errors.New("error while deleting indexes")
 	}
 	return nil
@@ -75,10 +88,12 @@ func (c *adapter) DeleteIndexes(ctx context.Context, indexNames []string) error 
 func (c *adapter) CreateAlias(ctx context.Context, indexName, aliasName string) error {
 	response, err := c.client.Indices.PutAlias([]string{indexName}, aliasName, c.client.Indices.PutAlias.WithContext(ctx))
 	if err != nil {
+		log.Error().Err(err).Msg("creating alias failed")
 		return err
 	}
 	defer closeBodyResponse(response)
 	if response.StatusCode != http.StatusOK {
+		log.Error().Interface("response-code", response.StatusCode).Msg("creating alias failed : response code")
 		return errors.New("error while adding alias to index")
 	}
 	return nil
@@ -88,10 +103,12 @@ func (c *adapter) CreateAlias(ctx context.Context, indexName, aliasName string) 
 func (c *adapter) DeleteAlias(ctx context.Context, indexName, aliasName string) error {
 	response, err := c.client.Indices.DeleteAlias([]string{indexName}, []string{aliasName}, c.client.Indices.DeleteAlias.WithContext(ctx))
 	if err != nil {
+		log.Error().Err(err).Msg("deleting alias failed")
 		return err
 	}
 	defer closeBodyResponse(response)
 	if response.StatusCode != http.StatusOK {
+		log.Error().Interface("response-code", response.StatusCode).Msg("deleting alias failed : response code")
 		return errors.New("error while deleting alias from index")
 	}
 	return nil
@@ -254,6 +271,7 @@ func createClient(config *configuration.AppConfig) (*elasticsearch.Client, error
 
 	client, err := elasticsearch.NewClient(cfg)
 	if err != nil {
+
 		return nil, fmt.Errorf("elastic adapter creation failure: %w", err)
 	}
 	return client, nil
